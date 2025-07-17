@@ -851,7 +851,7 @@
 import face_recognition
 from resemblyzer import preprocess_wav, VoiceEncoder
 import numpy as np
-import psycopg2  # Changed from cx_Oracle to psycopg2 for PostgreSQL
+import psycopg2 
 from psycopg2.extras import DictCursor
 import os
 from cryptography.fernet import Fernet
