@@ -876,23 +876,19 @@ from datetime import datetime
 import json
 import warnings
 
-# Suppress warnings
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:8000"}})
 
-# Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Create data directories
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'biometric_data')
 USERS_DIR = os.path.join(DATA_DIR, 'users')
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(USERS_DIR, exist_ok=True)
 
-# Initialize MediaPipe Face Mesh
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
     min_detection_confidence=0.5,
@@ -900,7 +896,6 @@ face_mesh = mp_face_mesh.FaceMesh(
     refine_landmarks=True
 )
 
-# PostgreSQL Database Configuration
 DB_CONFIG = {
     'dbname': 'biometric_db',
     'user': 'postgres',
@@ -909,7 +904,6 @@ DB_CONFIG = {
     'port': '5432'
 }
 
-# Initialize database connection
 def get_db_connection():
     try:
         conn = psycopg2.connect(**DB_CONFIG)
@@ -919,7 +913,6 @@ def get_db_connection():
         logger.error(f"Failed to connect to PostgreSQL database: {str(e)}")
         raise
 
-# Create tables and migrate schema
 def migrate_database(conn):
     try:
         with conn.cursor() as cur:
