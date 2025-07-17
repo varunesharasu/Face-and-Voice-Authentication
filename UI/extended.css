@@ -1029,3 +1029,8 @@
 .animate-fast { animation-duration: 0.3s; }
 .animate-slow { animation-duration: 1.5s; }
 
+
+/* --- End of extended.css --- */
+/* --- Additional Utility Classes --- */ 
+/* Flexbox Utilities */
+.flex { display: flex; }
