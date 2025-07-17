@@ -10,7 +10,6 @@ def run_migrations():
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
         
-        # Create users table
         cur.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
@@ -25,7 +24,6 @@ def run_migrations():
             )
         ''')
         
-        # Create indexes
         cur.execute('CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at)')
         
         conn.commit()
