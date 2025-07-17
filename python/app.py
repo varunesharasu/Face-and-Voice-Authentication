@@ -1280,7 +1280,6 @@ def train_biometric_model(features, input_dim, user_id, epochs=30):
         features_tensor = torch.FloatTensor(features).unsqueeze(0)
         features_tensor = features_tensor / torch.norm(features_tensor)
 
-        # Generate positive samples with data augmentation
         positive_samples = [features_tensor]
         for _ in range(5):
             noise = torch.randn_like(features_tensor) * 0.02
@@ -1289,7 +1288,6 @@ def train_biometric_model(features, input_dim, user_id, epochs=30):
             positive_samples.append(augmented)
         positive_samples = torch.cat(positive_samples, dim=0)
 
-        # Generate negative samples from random noise
         negative_samples = torch.randn(5, input_dim)
         negative_samples = negative_samples / torch.norm(negative_samples, dim=1, keepdim=True)
 
@@ -1297,7 +1295,6 @@ def train_biometric_model(features, input_dim, user_id, epochs=30):
         model.train()
         for epoch in range(epochs):
             total_loss = 0
-            # Train on positive pairs
             for i in range(len(positive_samples)):
                 for j in range(i + 1, len(positive_samples)):
                     optimizer.zero_grad()
@@ -1308,7 +1305,6 @@ def train_biometric_model(features, input_dim, user_id, epochs=30):
                     optimizer.step()
                     total_loss += loss.item()
 
-            # Train on negative pairs
             for pos in positive_samples:
                 for neg in negative_samples:
                     optimizer.zero_grad()
@@ -1328,7 +1324,6 @@ def train_biometric_model(features, input_dim, user_id, epochs=30):
     except Exception as e:
         logger.error(f"Error in train_biometric_model: {str(e)}")
         return None
-# [Rest of your existing code remains the same until the enroll_user function]
 
 def enroll_user(user_id, face_image_np, voice_file):
     global conn
@@ -1337,10 +1332,8 @@ def enroll_user(user_id, face_image_np, voice_file):
     
     try:
         logger.debug("Attempting face detection")
-        # Ensure image is uint8 RGB
         if face_image_np.dtype != np.uint8:
             face_image_np = face_image_np.astype(np.uint8)
-        # Resize for face recognition
         face_image_np = cv2.resize(face_image_np, (128, 128))
         face_locations = face_recognition.face_locations(face_image_np, model="hog", number_of_times_to_upsample=2)
         if len(face_locations) == 0:
@@ -1349,7 +1342,6 @@ def enroll_user(user_id, face_image_np, voice_file):
         face_encoding = face_recognition.face_encodings(face_image_np, face_locations)[0]
         logger.debug("Face encoding generated")
 
-        # Validate face encoding
         if face_encoding.shape != (128,):
             logger.error(f"Invalid face encoding shape: {face_encoding.shape}")
             return False, "Invalid face encoding"
@@ -1363,7 +1355,6 @@ def enroll_user(user_id, face_image_np, voice_file):
         face_encoding = face_encoding / norm
         logger.debug(f"Face encoding validated: shape={face_encoding.shape}, norm={norm:.4f}")
 
-        # Add liveness check
         is_live, liveness_msg = check_face_liveness(face_image_np)
         if not is_live:
             logger.error(f"Face liveness check failed: {liveness_msg}")
@@ -1385,7 +1376,6 @@ def enroll_user(user_id, face_image_np, voice_file):
         logger.debug("Face passed deepfake check")
 
         try:
-            # Create a copy of voice file for processing
             temp_voice_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav').name
             voice_segment = AudioSegment.from_file(voice_file)
             voice_segment.export(temp_voice_file, format='wav')
@@ -1407,7 +1397,6 @@ def enroll_user(user_id, face_image_np, voice_file):
             logger.debug("Generating voice encoding")
             wav = preprocess_wav(temp_voice_file)
             voice_encoding = voice_encoder.embed_utterance(wav)
-            # Validate voice encoding
             if np.any(np.isnan(voice_encoding)) or np.any(np.isinf(voice_encoding)):
                 logger.error("Voice encoding contains NaN or Inf values")
                 return False, "Invalid voice encoding"
@@ -1445,22 +1434,18 @@ def enroll_user(user_id, face_image_np, voice_file):
             return False, "Failed to save voice model"
         logger.debug("Model weights saved")
 
-        # Save user data before database insertion
         if not save_user_data(user_id, face_image_np, temp_voice_file):
             return False, "Failed to save user data"
         logger.debug(f"User data saved to directory for user {user_id}")
 
-        # Store original face image and voice data
         _, face_image_bytes = cv2.imencode('.jpg', face_image_np)
         face_image_bytes = face_image_bytes.tobytes()
         
-        # Read the voice file as binary data
         with open(temp_voice_file, 'rb') as f:
             voice_audio_bytes = f.read()
 
         logger.debug("Inserting user into database")
         with conn.cursor() as cur:
-            # Convert numpy arrays to bytes for PostgreSQL
             face_encoding_bytes = pickle.dumps(face_encoding)
             voice_encoding_bytes = pickle.dumps(voice_encoding)
             
@@ -1486,7 +1471,6 @@ def enroll_user(user_id, face_image_np, voice_file):
         conn.rollback()
         return False, f"Enrollment failed: {str(e)}"
     finally:
-        # Clean up temporary files
         for temp_file in [voice_file, temp_voice_file, voice_wav]:
             if temp_file and os.path.exists(temp_file):
                 try:
@@ -1500,21 +1484,17 @@ def authenticate_user(user_id, face_image_np, voice_file):
     stored_voice_file = None
     temp_voice_file = None
     try:
-        # Validate face image
         face_locations = face_recognition.face_locations(face_image_np)
         if not face_locations:
             return False, "No face detected"
         
-        # Generate face encoding
         face_encoding = face_recognition.face_encodings(face_image_np)[0]
         face_encoding = face_encoding / np.linalg.norm(face_encoding)
 
-        # Verify liveness
         is_live, liveness_msg = check_face_liveness(face_image_np)
         if not is_live:
             return False, f"Face liveness check failed: {liveness_msg}"
 
-        # Get stored user data
         with conn.cursor() as c:
             c.execute("""SELECT face_model, voice_model, face_encoding, voice_encoding 
                         FROM users WHERE user_id = %s""", (user_id,))
