@@ -923,7 +923,6 @@ def get_db_connection():
 def migrate_database(conn):
     try:
         with conn.cursor() as cur:
-            # Create users table if not exists
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     user_id INTEGER PRIMARY KEY,
@@ -937,7 +936,6 @@ def migrate_database(conn):
                 )
             """)
             
-            # Check if all columns exist
             cur.execute("""
                 SELECT column_name 
                 FROM information_schema.columns 
@@ -946,7 +944,6 @@ def migrate_database(conn):
             columns = [col[0] for col in cur.fetchall()]
             logger.debug(f"Current users table columns: {columns}")
             
-            # Add missing columns
             for col in ['face_model', 'voice_model', 'face_encoding', 'voice_encoding', 
                        'face_image', 'voice_audio']:
                 if col not in columns:
@@ -960,7 +957,6 @@ def migrate_database(conn):
         conn.rollback()
         raise
 
-# Initialize database connection and migrate schema
 try:
     conn = get_db_connection()
     migrate_database(conn)
@@ -974,7 +970,6 @@ except Exception as e:
 def migrate_database(conn):
     try:
         with conn.cursor() as cur:
-            # Check if users table exists
             cur.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
@@ -984,7 +979,6 @@ def migrate_database(conn):
             table_exists = cur.fetchone()[0]
             
             if not table_exists:
-                # Create users table
                 cur.execute("""
                     CREATE TABLE users (
                         user_id INTEGER PRIMARY KEY,
@@ -999,7 +993,6 @@ def migrate_database(conn):
                 """)
                 logger.debug("Created users table")
             
-            # Get existing columns
             cur.execute("""
                 SELECT column_name 
                 FROM information_schema.columns 
@@ -1008,7 +1001,6 @@ def migrate_database(conn):
             columns = [col[0] for col in cur.fetchall()]
             logger.debug(f"Current users table columns: {columns}")
             
-            # Add missing columns
             for col in ['face_model', 'voice_model', 'face_encoding', 'voice_encoding', 
                        'face_image', 'voice_audio']:
                 if col not in columns:
@@ -1020,7 +1012,6 @@ def migrate_database(conn):
     except Exception as e:
         logger.error(f"Failed to migrate database schema: {str(e)}")
         raise
-# Initialize database connection and migrate schema
 try:
     conn = get_db_connection()
     migrate_database(conn)
@@ -1028,7 +1019,6 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize database: {str(e)}")
     raise
-# Load deepfake detection models with error handling
 try:
     face_deepfake_model = ViTForImageClassification.from_pretrained("prithivMLmods/Deep-Fake-Detector-Model")
     face_processor = ViTImageProcessor.from_pretrained("prithivMLmods/Deep-Fake-Detector-Model")
@@ -1039,7 +1029,6 @@ except Exception as e:
     logger.error(f"Failed to load deepfake detection models: {str(e)}")
     raise
 
-# Load speaker recognition model
 try:
     voice_encoder = VoiceEncoder("cpu")
     logger.debug("Voice encoder loaded successfully")
@@ -1047,7 +1036,6 @@ except Exception as e:
     logger.error(f"Failed to load voice encoder: {str(e)}")
     raise
 
-# Simple neural network for user-specific biometric authentication
 
 
 class BiometricClassifier(nn.Module):
@@ -1099,15 +1087,14 @@ def load_model(state_dict_bytes, input_dim):
         logger.error(f"Error loading model: {str(e)}")
         return None
 
-# Helper functions
 def process_base64_image(base64_string):
     try:
         if "," in base64_string:
             base64_string = base64_string.split(",")[1]
         logger.debug(f"Processing face image base64 (first 50 chars): {base64_string[:50]}")
         image_data = base64.b64decode(base64_string)
-        image = Image.open(io.BytesIO(image_data)).convert("RGB")  # Ensure RGB
-        image_np = np.array(image, dtype=np.uint8)  # Explicitly set to uint8
+        image = Image.open(io.BytesIO(image_data)).convert("RGB")  
+        image_np = np.array(image, dtype=np.uint8)  
         if image_np.ndim != 3 or image_np.shape[2] != 3:
             logger.error("Image is not RGB (3 channels)")
             return None
@@ -1137,20 +1124,17 @@ def validate_audio_file(file_path):
 
 def process_audio_file(audio_data):
     try:
-        # Save temporary WebM file
         temp_webm = tempfile.NamedTemporaryFile(delete=False, suffix='.webm').name
         with open(temp_webm, "wb") as f:
             f.write(audio_data)
         logger.debug(f"Audio file saved as {temp_webm}")
 
-        # Convert WebM to WAV
         temp_wav = tempfile.NamedTemporaryFile(delete=False, suffix='.wav').name
         audio = AudioSegment.from_file(temp_webm, format="webm")
         audio = audio.set_frame_rate(16000).set_channels(1)  # Ensure 16kHz mono for Wav2Vec2
         audio.export(temp_wav, format="wav")
         logger.debug(f"Audio converted to {temp_wav}")
 
-        # Validate the converted WAV file
         if not validate_audio_file(temp_wav):
             logger.error("Audio validation failed")
             os.remove(temp_webm)
