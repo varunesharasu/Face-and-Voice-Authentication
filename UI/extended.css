@@ -1037,3 +1037,6 @@
 
 .flex-col { flex-direction: column; }
 .flex-row { flex-direction: row; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+.flex-row-reverse { flex-direction: row-reverse; }
