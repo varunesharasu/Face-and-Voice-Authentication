@@ -1157,7 +1157,6 @@ def process_audio_file(audio_data):
             os.remove(temp_wav)
             return None
 
-        # Clean up temporary WebM
         os.remove(temp_webm)
         return temp_wav
     except Exception as e:
@@ -1173,7 +1172,6 @@ def check_face_liveness(image):
         
         landmarks = results.multi_face_landmarks[0].landmark
 
-        # Define landmark indices for facial features
         FACIAL_LANDMARKS = {
             'nose_tip': 1,
             'left_eye': [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398],
@@ -1183,7 +1181,6 @@ def check_face_liveness(image):
             'mouth': [0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146, 61, 185, 40, 39, 37]
         }
 
-        # Validate landmark indices
         for feature, indices in FACIAL_LANDMARKS.items():
             if isinstance(indices, list):
                 if not all(0 <= idx < len(landmarks) for idx in indices):
@@ -1192,18 +1189,16 @@ def check_face_liveness(image):
                 if not 0 <= indices < len(landmarks):
                     return False, f"Invalid landmark index for {feature}"
 
-        # 1. Depth check
         nose_depth = landmarks[FACIAL_LANDMARKS['nose_tip']].z
         left_ear_pos = landmarks[FACIAL_LANDMARKS['left_ear']]
         right_ear_pos = landmarks[FACIAL_LANDMARKS['right_ear']]
         ear_distance = abs(left_ear_pos.x - right_ear_pos.x)
         
-        if ear_distance == 0:  # Avoid division by zero
+        if ear_distance == 0:  
             return False, "Invalid ear distance detected"
             
         depth_ratio = abs(nose_depth) / ear_distance
 
-        # 2. Eye openness check
         def get_eye_height(eye_points):
             top_point = min(landmarks[i].y for i in eye_points)
             bottom_point = max(landmarks[i].y for i in eye_points)
@@ -1212,7 +1207,6 @@ def check_face_liveness(image):
         left_eye_height = get_eye_height(FACIAL_LANDMARKS['left_eye'])
         right_eye_height = get_eye_height(FACIAL_LANDMARKS['right_eye'])
         
-        # 3. Face angle check
         face_rotation = abs(left_ear_pos.z - right_ear_pos.z)
 
         checks = {
