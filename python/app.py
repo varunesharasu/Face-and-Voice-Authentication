@@ -823,4 +823,4 @@ if __name__ == "__main__":
     finally:
         if 'conn' in globals():
             conn.close()
-            logger.debug("Database connection closed")
+            logger.debug("Database connection closed...")
