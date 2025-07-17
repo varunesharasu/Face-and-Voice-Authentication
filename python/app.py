@@ -1526,32 +1526,27 @@ def authenticate_user(user_id, face_image_np, voice_file):
             stored_face_encoding = pickle.loads(stored_face_enc)
             stored_voice_encoding = pickle.loads(stored_voice_enc)
 
-        # Direct face matching
         face_distance = face_recognition.face_distance([stored_face_encoding], face_encoding)[0]
         if face_distance > 0.6:
             return False, "Face does not match"
 
-        # Load and verify voice
         try:
             wav = preprocess_wav(voice_file)
             voice_encoding = voice_encoder.embed_utterance(wav)
             voice_encoding = voice_encoding / np.linalg.norm(voice_encoding)
             
-            # Direct voice matching
             voice_distance = np.linalg.norm(voice_encoding - stored_voice_encoding)
             if voice_distance > 0.6:
                 return False, "Voice does not match"
         except Exception as e:
             return False, f"Voice verification failed: {str(e)}"
 
-        # Load and apply biometric models
         face_model = load_model(face_model_bytes, input_dim=128)
         voice_model = load_model(voice_model_bytes, input_dim=voice_encoding.shape[0])
         
         if not face_model or not voice_model:
             return False, "Failed to load biometric models"
 
-        # Model-based verification
         with torch.no_grad():
             face_input = torch.tensor(face_encoding, dtype=torch.float32).unsqueeze(0)
             voice_input = torch.tensor(voice_encoding, dtype=torch.float32).unsqueeze(0)
@@ -1585,7 +1580,6 @@ def authenticate_user(user_id, face_image_np, voice_file):
                 except Exception as e:
                     logger.warning(f"Failed to remove temp file: {str(e)}")
 
-# Add route to view stored user data
 @app.route('/user/<int:user_id>/data', methods=['GET'])
 def get_user_data(user_id):
     try:
@@ -1610,7 +1604,6 @@ def get_user_data(user_id):
         logger.error(f"Error retrieving user data: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
 
-# Flask API endpoints
 @app.route('/signup', methods=['POST'])
 def signup():
     global conn
@@ -1702,7 +1695,6 @@ def login():
     except Exception as e:
         logger.error(f"Error in login endpoint: {str(e)}")
         return jsonify({"success": False, "message": f"Server error: {str(e)}"}), 500
-# [Rest of your existing code remains the same]
 
 if __name__ == "__main__":
     try:
