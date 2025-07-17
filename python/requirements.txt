@@ -1,0 +1,14 @@
+face_recognition
+resemblyzer
+numpy
+cryptography
+transformers
+torch
+opencv-python
+flask
+flask-cors
+Pillow
+pydub
+librosa
+mediapipe
+psycopg2-binary
