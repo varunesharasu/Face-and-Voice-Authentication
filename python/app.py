@@ -1215,7 +1215,6 @@ def check_face_liveness(image):
         # 3. Face angle check
         face_rotation = abs(left_ear_pos.z - right_ear_pos.z)
 
-        # Combine all checks with adjusted thresholds
         checks = {
             "depth": 0.1 < depth_ratio < 1.0,  # More permissive depth ratio
             "eyes_open": min(left_eye_height, right_eye_height) > 0.01,
@@ -1224,7 +1223,6 @@ def check_face_liveness(image):
 
         failed_checks = [k for k, v in checks.items() if not v]
         
-        # Log detailed measurements for debugging
         logger.debug(f"Liveness measurements - depth_ratio: {depth_ratio:.3f}, "
                     f"eye_heights: {left_eye_height:.3f}/{right_eye_height:.3f}, "
                     f"face_rotation: {face_rotation:.3f}")
@@ -1247,15 +1245,12 @@ def save_user_data(user_id, face_image_np, voice_wav):
         user_dir = os.path.join(USERS_DIR, str(user_id))
         os.makedirs(user_dir, exist_ok=True)
         
-        # Save face image
         face_path = os.path.join(user_dir, 'face.jpg')
         cv2.imwrite(face_path, face_image_np)
         
-        # Save voice recording
         voice_path = os.path.join(user_dir, 'voice.wav')
         AudioSegment.from_wav(voice_wav).export(voice_path, format='wav')
         
-        # Save metadata
         metadata = {
             'enrolled_at': datetime.now().isoformat(),
             'face_shape': face_image_np.shape,
@@ -1276,7 +1271,6 @@ def train_biometric_model(features, input_dim, user_id, epochs=30):
         criterion = ContrastiveLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-        # Convert features to tensor and normalize
         features_tensor = torch.FloatTensor(features).unsqueeze(0)
         features_tensor = features_tensor / torch.norm(features_tensor)
 
