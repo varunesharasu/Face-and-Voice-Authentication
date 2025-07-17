@@ -951,3 +951,81 @@
   }
   .btn-lg { font-size: 1rem; padding: 12px 18px; }
 }
+
+/* --- Custom Animations and Animation Utilities --- */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes flipInY {
+  0% { transform: perspective(400px) rotateY(90deg); opacity: 0; }
+  40% { transform: perspective(400px) rotateY(-10deg); }
+  70% { transform: perspective(400px) rotateY(10deg); }
+  100% { transform: perspective(400px) rotateY(0); opacity: 1; }
+}
+.animate-flipInY {
+  animation: flipInY 0.7s both;
+}
+
+@keyframes zoomIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-zoomIn {
+  animation: zoomIn 0.5s cubic-bezier(.4,0,.2,1) both;
+}
+
+@keyframes swing {
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+.animate-swing {
+  animation: swing 1s ease both;
+}
+
+@keyframes fadeInLeft {
+  0% { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.animate-fadeInLeft {
+  animation: fadeInLeft 0.6s cubic-bezier(.4,0,.2,1) both;
+}
+
+@keyframes fadeInRight {
+  0% { opacity: 0; transform: translateX(40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.animate-fadeInRight {
+  animation: fadeInRight 0.6s cubic-bezier(.4,0,.2,1) both;
+}
+
+@keyframes jello {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(1.25, 0.75, 1); }
+  40% { transform: scale3d(0.75, 1.25, 1); }
+  50% { transform: scale3d(1.15, 0.85, 1); }
+  65% { transform: scale3d(.95, 1.05, 1); }
+  75% { transform: scale3d(1.05, .95, 1); }
+}
+.animate-jello {
+  animation: jello 0.9s both;
+}
+
+/* Animation utility classes */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-500 { animation-delay: 0.5s; }
+.animate-infinite { animation-iteration-count: infinite; }
+.animate-fast { animation-duration: 0.3s; }
+.animate-slow { animation-duration: 1.5s; }
+
