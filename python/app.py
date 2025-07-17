@@ -959,7 +959,6 @@ except Exception as e:
     raise
 
 
-# Create tables and migrate schema
 def migrate_database(conn):
     try:
         with conn.cursor() as cur:
@@ -1124,7 +1123,7 @@ def process_audio_file(audio_data):
 
         temp_wav = tempfile.NamedTemporaryFile(delete=False, suffix='.wav').name
         audio = AudioSegment.from_file(temp_webm, format="webm")
-        audio = audio.set_frame_rate(16000).set_channels(1)  # Ensure 16kHz mono for Wav2Vec2
+        audio = audio.set_frame_rate(16000).set_channels(1)  
         audio.export(temp_wav, format="wav")
         logger.debug(f"Audio converted to {temp_wav}")
 
@@ -1187,7 +1186,7 @@ def check_face_liveness(image):
         face_rotation = abs(left_ear_pos.z - right_ear_pos.z)
 
         checks = {
-            "depth": 0.1 < depth_ratio < 1.0,  # More permissive depth ratio
+            "depth": 0.1 < depth_ratio < 1.0,  
             "eyes_open": min(left_eye_height, right_eye_height) > 0.01,
             "face_angle": face_rotation < 0.5
         }
